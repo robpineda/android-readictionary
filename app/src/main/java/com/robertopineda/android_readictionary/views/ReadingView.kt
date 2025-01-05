@@ -36,7 +36,6 @@ fun ReadingView(
                         text = { Text(language.name) }, // Add `text` parameter
                         onClick = { targetLanguage.value = language }
                     )
-                    }
                 }
             }
         }
@@ -50,7 +49,7 @@ fun ReadingView(
 
         // Dictionary View
         DictionaryView(
-            height = dictionaryViewHeight,
+            height = dictionaryViewHeight.toFloat(),
             isDragging = isDragging,
             translatedWords = translatedWords,
             highlightedWord = highlightedWord

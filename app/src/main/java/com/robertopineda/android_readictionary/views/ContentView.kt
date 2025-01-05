@@ -14,6 +14,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.robertopineda.android_readictionary.models.Language
+import com.robertopineda.android_readictionary.models.TextRecord
 import com.robertopineda.android_readictionary.models.TranslatedWord
 
 @Composable
@@ -21,15 +22,17 @@ fun ContentView() {
     val navController = rememberNavController()
     val translatedWords = remember { mutableStateListOf<TranslatedWord>() }
     val targetLanguage = remember { mutableStateOf(Language.ENGLISH) }
+    val textRecords = remember { mutableStateListOf<TextRecord>() }
 
-    TabLayout(navController, translatedWords, targetLanguage)
+    TabLayout(navController, translatedWords, targetLanguage, textRecords)
 }
 
 @Composable
 fun TabLayout(
     navController: NavController,
     translatedWords: SnapshotStateList<TranslatedWord>,
-    targetLanguage: MutableState<Language>
+    targetLanguage: MutableState<Language>,
+    textRecords: SnapshotStateList<TextRecord>
 ) {
     var selectedTab by remember { mutableStateOf(0) }
 
@@ -51,7 +54,7 @@ fun TabLayout(
 
         when (selectedTab) {
             0 -> DocumentListView(navController, translatedWords, targetLanguage)
-            1 -> TextModeListView(navController, translatedWords, targetLanguage)
+            1 -> TextModeListView(navController, translatedWords, targetLanguage, textRecords)
         }
     }
 }

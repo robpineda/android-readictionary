@@ -5,4 +5,7 @@ sealed class Screen(val route: String) {
     object ReadingView : Screen("readingView/{documentUri}") {
         fun createRoute(documentUri: String) = "readingView/$documentUri"
     }
+    object TextModeDetailView : Screen("textModeDetailView/{recordId}") {
+        fun createRoute(recordId: String) = "textModeDetailView/$recordId"
+    }
 }
