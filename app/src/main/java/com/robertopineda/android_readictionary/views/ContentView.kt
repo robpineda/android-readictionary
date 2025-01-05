@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.robertopineda.android_readictionary.models.Language
@@ -18,13 +19,18 @@ import com.robertopineda.android_readictionary.models.TextRecord
 import com.robertopineda.android_readictionary.models.TranslatedWord
 
 @Composable
-fun ContentView() {
-    val navController = rememberNavController()
-    val translatedWords = remember { mutableStateListOf<TranslatedWord>() }
-    val targetLanguage = remember { mutableStateOf(Language.ENGLISH) }
-    val textRecords = remember { mutableStateListOf<TextRecord>() }
-
-    TabLayout(navController, translatedWords, targetLanguage, textRecords)
+fun ContentView(
+    navController: NavController,
+    translatedWords: SnapshotStateList<TranslatedWord>,
+    targetLanguage: MutableState<Language>,
+    textRecords: SnapshotStateList<TextRecord>
+) {
+    TabLayout(
+        navController = navController,
+        translatedWords = translatedWords,
+        targetLanguage = targetLanguage,
+        textRecords = textRecords
+    )
 }
 
 @Composable
@@ -34,9 +40,9 @@ fun TabLayout(
     targetLanguage: MutableState<Language>,
     textRecords: SnapshotStateList<TextRecord>
 ) {
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
 
-    Column {
+    Column(modifier = Modifier.fillMaxSize()) {
         TabRow(selectedTabIndex = selectedTab) {
             Tab(
                 selected = selectedTab == 0,
@@ -52,6 +58,7 @@ fun TabLayout(
             )
         }
 
+        // Content for the selected tab
         when (selectedTab) {
             0 -> DocumentListView(navController, translatedWords, targetLanguage)
             1 -> TextModeListView(navController, translatedWords, targetLanguage, textRecords)

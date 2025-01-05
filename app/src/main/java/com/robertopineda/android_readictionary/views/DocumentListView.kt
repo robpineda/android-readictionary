@@ -23,34 +23,38 @@ fun DocumentListView(
     translatedWords: SnapshotStateList<TranslatedWord>,
     targetLanguage: MutableState<Language>
 ) {
+
     val documents = remember { mutableStateListOf<Uri>() }
     var showDocumentPicker by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("My Library") },
-                actions = {
-                    IconButton(onClick = { showDocumentPicker = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Document")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            items(documents) { document ->
-                // Use a Button or Clickable Text for navigation
-                Text(
-                    text = document.lastPathSegment ?: "Unknown",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            // Navigate to the ReadingView
-                            navController.navigate("readingView/${document.toString()}")
+    // Ensure the content fills the available space
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("My Library") },
+                    actions = {
+                        IconButton(onClick = { showDocumentPicker = true }) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Document")
                         }
-                        .padding(16.dp)
+                    }
                 )
+            }
+        ) { padding ->
+            LazyColumn(modifier = Modifier.padding(padding)) {
+                items(documents) { document ->
+                    // Use a Button or Clickable Text for navigation
+                    Text(
+                        text = document.lastPathSegment ?: "Unknown",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                // Navigate to the ReadingView
+                                navController.navigate("readingView/${document.toString()}")
+                            }
+                            .padding(16.dp)
+                    )
+                }
             }
         }
     }

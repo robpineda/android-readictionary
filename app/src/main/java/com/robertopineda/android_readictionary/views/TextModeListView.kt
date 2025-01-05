@@ -27,27 +27,30 @@ fun TextModeListView(
 ) {
     var showTextInputView by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Text Translations") }, actions = {
-                IconButton(onClick = { showTextInputView = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Text")
+    // Ensure the content fills the available space
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(title = { Text("Text Translations") }, actions = {
+                    IconButton(onClick = { showTextInputView = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add Text")
+                    }
+                })
+            }
+        ) { padding ->
+            LazyColumn(modifier = Modifier.padding(padding)) {
+                items(textRecords) { record ->
+                    Text(
+                        text = record.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                // Navigate to TextModeDetailView
+                                navController.navigate("textModeDetailView/${record.id}")
+                            }
+                            .padding(16.dp)
+                    )
                 }
-            })
-        }
-    ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            items(textRecords) { record ->
-                Text(
-                    text = record.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            // Navigate to TextModeDetailView
-                            navController.navigate("textModeDetailView/${record.id}")
-                        }
-                        .padding(16.dp)
-                )
             }
         }
     }
