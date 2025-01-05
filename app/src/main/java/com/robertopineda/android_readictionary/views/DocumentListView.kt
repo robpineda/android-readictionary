@@ -11,8 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.robertopineda.android_readictionary.utilities.*
+import com.robertopineda.android_readictionary.Screen
 import com.robertopineda.android_readictionary.models.Language
 import com.robertopineda.android_readictionary.models.TranslatedWord
 
@@ -26,6 +29,7 @@ fun DocumentListView(
 
     val documents = remember { mutableStateListOf<Uri>() }
     var showDocumentPicker by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Ensure the content fills the available space
     Box(modifier = Modifier.fillMaxSize()) {
@@ -43,14 +47,14 @@ fun DocumentListView(
         ) { padding ->
             LazyColumn(modifier = Modifier.padding(padding)) {
                 items(documents) { document ->
-                    // Use a Button or Clickable Text for navigation
+                    val fileName = getFileNameFromUri(context, document) ?: "Unknown"
                     Text(
-                        text = document.lastPathSegment ?: "Unknown",
+                        text = fileName,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
                                 // Navigate to the ReadingView
-                                navController.navigate("readingView/${document.toString()}")
+                                navController.navigate(Screen.ReadingView.createRoute(document.toString()))
                             }
                             .padding(16.dp)
                     )
