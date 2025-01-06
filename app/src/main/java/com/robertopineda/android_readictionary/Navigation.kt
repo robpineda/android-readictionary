@@ -2,12 +2,14 @@ package com.robertopineda.android_readictionary
 
 import android.net.Uri
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.robertopineda.android_readictionary.models.Language
 import com.robertopineda.android_readictionary.models.TextRecord
 import com.robertopineda.android_readictionary.models.TranslatedWord
+import com.robertopineda.android_readictionary.utilities.SharedPreferencesHelper
 import com.robertopineda.android_readictionary.views.ContentView
 import com.robertopineda.android_readictionary.views.DocumentListView
 import com.robertopineda.android_readictionary.views.ReadingView
@@ -19,6 +21,7 @@ fun AppNavigation() {
     val translatedWords = remember { mutableStateListOf<TranslatedWord>() }
     val targetLanguage = remember { mutableStateOf(Language.ENGLISH) }
     val textRecords = remember { mutableStateListOf<TextRecord>() }
+    val documents = remember { mutableStateListOf<Uri>() }
 
     NavHost(
         navController = navController,
@@ -30,7 +33,8 @@ fun AppNavigation() {
                 navController = navController,
                 translatedWords = translatedWords,
                 targetLanguage = targetLanguage,
-                textRecords = textRecords
+                textRecords = textRecords,
+                documents = documents
             )
         }
 
@@ -39,7 +43,8 @@ fun AppNavigation() {
             DocumentListView(
                 navController = navController,
                 translatedWords = translatedWords,
-                targetLanguage = targetLanguage
+                targetLanguage = targetLanguage,
+                documents = documents
             )
         }
 

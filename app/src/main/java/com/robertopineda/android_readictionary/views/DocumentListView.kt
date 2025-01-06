@@ -1,6 +1,7 @@
 package com.robertopineda.android_readictionary.views
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,12 +25,12 @@ import com.robertopineda.android_readictionary.models.TranslatedWord
 fun DocumentListView(
     navController: NavController, // Pass NavController as a parameter
     translatedWords: SnapshotStateList<TranslatedWord>,
-    targetLanguage: MutableState<Language>
+    targetLanguage: MutableState<Language>,
+    documents: SnapshotStateList<Uri>
 ) {
-
-    val documents = remember { mutableStateListOf<Uri>() }
     var showDocumentPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val sharedPreferencesHelper = remember { SharedPreferencesHelper(context) }
 
     // Ensure the content fills the available space
     Box(modifier = Modifier.fillMaxSize()) {
@@ -47,14 +48,22 @@ fun DocumentListView(
         ) { padding ->
             LazyColumn(modifier = Modifier.padding(padding)) {
                 items(documents) { document ->
-                    val fileName = getFileNameFromUri(context, document) ?: "Unknown"
+                    val fileName = try {
+                        getFileNameFromUri(context, document) ?: "Unknown"
+                    } catch (e: SecurityException) {
+                        Log.e("DocumentListView", "Permission denied for URI: $document", e)
+                        "Permission Denied"
+                    }
                     Text(
                         text = fileName,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                // Navigate to the ReadingView
-                                navController.navigate(Screen.ReadingView.createRoute(document.toString()))
+                                try {
+                                    navController.navigate(Screen.ReadingView.createRoute(document.toString()))
+                                } catch (e: SecurityException) {
+                                    Log.e("DocumentListView", "Permission denied for URI: $document", e)
+                                }
                             }
                             .padding(16.dp)
                     )
@@ -66,6 +75,7 @@ fun DocumentListView(
     if (showDocumentPicker) {
         DocumentPicker { uri ->
             documents.add(uri)
+            sharedPreferencesHelper.saveDocuments(documents)
             showDocumentPicker = false
         }
     }
