@@ -15,27 +15,24 @@ import com.robertopineda.android_readictionary.models.TranslatedWord
 
 @Composable
 fun DictionaryView(
-    height: Float,
-    isDragging: Boolean,
     translatedWords: List<TranslatedWord>,
-    highlightedWord: String?
+    highlightedWord: String?,
+    modifier: Modifier = Modifier
 ) {
-    Column(modifier = Modifier.height(height.dp)) {
-        // Drag Handle
-        Box(
-            modifier = Modifier
-                .height(8.dp)
-                .fillMaxWidth()
-                .background(Color.Gray)
-                .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
-                        // Update height based on drag
-                    }
-                }
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Dictionary",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // Translated Words List
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+        ) {
             items(translatedWords) { word ->
                 TranslatedWordRow(
                     word = word,

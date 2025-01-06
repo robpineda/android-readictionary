@@ -1,6 +1,8 @@
 package com.robertopineda.android_readictionary.views
 
 import android.net.Uri
+import android.util.Log
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.platform.LocalContext
@@ -15,25 +17,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import java.io.InputStream
 
 @Composable
 fun PDFView(
     documentUri: Uri,
     translatedWords: SnapshotStateList<TranslatedWord>,
-    targetLanguage: MutableState<Language>
+    targetLanguage: MutableState<Language>,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-
-    // Extract text from the PDF
     var extractedText by remember { mutableStateOf("") }
 
     // Load PDF and extract text
     LaunchedEffect(documentUri) {
+        Log.d("PDFView", "Document URI: $documentUri")
+
         withContext(Dispatchers.IO) {
-            val pdfFile = File(documentUri.path ?: "")
-            if (pdfFile.exists()) {
-                extractedText = extractTextFromPdf(pdfFile)
+            val inputStream = context.contentResolver.openInputStream(documentUri)
+            if (inputStream != null) {
+                extractedText = extractTextFromPdf(inputStream)
+            } else {
+                Log.e("PDFView", "Failed to open input stream for URI: $documentUri")
             }
         }
     }
@@ -70,18 +78,31 @@ fun PDFView(
     AndroidView<PDFView>(
         factory = { context ->
             PDFView(context, null).apply {
-                fromUri(documentUri)
-                    .enableSwipe(true)
-                    .enableDoubletap(true)
-                    .defaultPage(0)
-                    .load()
+
+                // Set a background color to visualize the boundaries
+                setBackgroundColor(1) // Black
+
+                // Use ContentResolver to open an InputStream from the URI
+                val inputStream = context.contentResolver.openInputStream(documentUri)
+                if (inputStream != null) {
+                    fromStream(inputStream)
+                        .enableSwipe(true)
+                        .enableDoubletap(true)
+                        .defaultPage(0)
+                        .fitEachPage(true) // Adjust rendering settings
+                        .autoSpacing(false) // Disable auto-spacing
+                        .load()
+                } else {
+                    Log.e("PDFView", "Failed to open input stream for URI: $documentUri")
+                }
             }
-        }
+        },
+        modifier = modifier.fillMaxSize()
     )
 }
 
 // Function to extract text from a PDF file
-private fun extractTextFromPdf(pdfFile: File): String {
+private fun extractTextFromPdf(inputStream: InputStream): String {
     // Implement text extraction logic here
     // For now, return an empty string
     return ""

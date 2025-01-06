@@ -3,9 +3,11 @@ package com.robertopineda.android_readictionary
 import android.net.Uri
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.robertopineda.android_readictionary.models.Language
 import com.robertopineda.android_readictionary.models.TextRecord
 import com.robertopineda.android_readictionary.models.TranslatedWord
@@ -49,7 +51,10 @@ fun AppNavigation() {
         }
 
         // ReadingView Screen
-        composable(Screen.ReadingView.route) { backStackEntry ->
+        composable(
+            route = Screen.ReadingView.route,
+            arguments = listOf(navArgument("documentUri") { type = NavType.StringType })
+        ) { backStackEntry ->
             val documentUri = backStackEntry.arguments?.getString("documentUri") ?: ""
             ReadingView(
                 documentUri = Uri.parse(documentUri),

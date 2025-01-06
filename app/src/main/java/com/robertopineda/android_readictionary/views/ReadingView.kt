@@ -1,58 +1,78 @@
 package com.robertopineda.android_readictionary.views
 
 import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalConfiguration
 import com.robertopineda.android_readictionary.models.Language
 import com.robertopineda.android_readictionary.models.TranslatedWord
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ReadingView(
     documentUri: Uri,
     translatedWords: SnapshotStateList<TranslatedWord>,
     targetLanguage: MutableState<Language>
 ) {
-    // Use `remember` to initialize `dictionaryViewHeight` in a composable context
     val configuration = LocalConfiguration.current
     var dictionaryViewHeight by remember { mutableStateOf(configuration.screenHeightDp / 2) }
     var isDragging by remember { mutableStateOf(false) }
     var highlightedWord by remember { mutableStateOf<String?>(null) }
 
-    Column {
-        // Language Picker
-        Row {
-            Text("Target Language")
-            Spacer(modifier = Modifier.weight(1f)) // Add modifier
-            DropdownMenu(
-                expanded = false,
-                onDismissRequest = { /* Handle dismiss */ }
-            ) {
-                Language.entries.forEach { language ->
-                    DropdownMenuItem(
-                        text = { Text(language.name) }, // Add `text` parameter
-                        onClick = { targetLanguage.value = language }
-                    )
-                }
-            }
-        }
+    val screenHeight = configuration.screenHeightDp.dp
 
-        // PDF Reader
-        if (documentUri.toString().endsWith(".pdf")) {
-            PDFView(documentUri, translatedWords, targetLanguage)
-        } else {
-            Text("Unsupported file format")
-        }
+    // Decode the document URI
+    val decodedUri = Uri.parse(Uri.decode(documentUri.toString()))
 
-        // Dictionary View
-        DictionaryView(
-            height = dictionaryViewHeight.toFloat(),
-            isDragging = isDragging,
+    // State for the sheet's height
+    var sheetHeight by remember { mutableStateOf(300.dp) }
+
+    // Access LocalDensity in a composable context
+    val density = LocalDensity.current
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // PDFView (Top View)
+        PDFView(
+            documentUri = decodedUri,
             translatedWords = translatedWords,
-            highlightedWord = highlightedWord
+            targetLanguage = targetLanguage,
+            modifier = Modifier.fillMaxSize()
         )
+
+        // DictionaryView (Bottom Sheet)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(sheetHeight)
+                .align(Alignment.BottomCenter)
+                .background(Color.White)
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures { _, dragAmount ->
+                        // Convert sheetHeight to pixels for calculation
+                        val currentHeightPx = with(density) { sheetHeight.toPx() }
+                        val newHeightPx = currentHeightPx - dragAmount // Subtract dragAmount in pixels
+                        val newHeightDp = with(density) { newHeightPx.toDp() }
+
+                        // Update sheetHeight, ensuring it stays within bounds
+                        sheetHeight = newHeightDp.coerceIn(100.dp, 400.dp)
+                    }
+                }
+        ) {
+            DictionaryView(
+                translatedWords = translatedWords,
+                highlightedWord = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }

@@ -63,23 +63,27 @@ fun DocumentListView(
                         "Permission Denied"
                     }
 
-                    // Long-press gesture to show the context menu
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                try {
-                                    navController.navigate(Screen.ReadingView.createRoute(document.toString()))
-                                } catch (e: SecurityException) {
-                                    Log.e("DocumentListView", "Permission denied for URI: $document", e)
-                                }
-                            }
                             .pointerInput(Unit) {
                                 detectTapGestures(
+                                    onTap = {
+                                        Log.d("DocumentListView", "Tapped on document: $document")
+                                        try {
+                                            val encodedUri = Uri.encode(document.toString())
+                                            navController.navigate(Screen.ReadingView.createRoute(encodedUri))
+                                            Log.d("DocumentListView", "Navigation triggered")
+                                        } catch (e: SecurityException) {
+                                            Log.e("DocumentListView", "Permission denied for URI: $document", e)
+                                        } catch (e: Exception) {
+                                            Log.e("DocumentListView", "Navigation failed: ${e.message}", e)
+                                        }
+                                    },
                                     onLongPress = {
                                         selectedDocument = document
                                         showDialog = true
-                                    }
+                                    },
                                 )
                             }
                             .padding(16.dp)
