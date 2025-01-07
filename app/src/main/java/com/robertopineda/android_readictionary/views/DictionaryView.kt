@@ -30,9 +30,7 @@ fun DictionaryView(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(translatedWords) { word ->
                 TranslatedWordRow(
                     word = word,

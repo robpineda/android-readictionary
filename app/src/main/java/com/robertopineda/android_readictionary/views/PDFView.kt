@@ -1,6 +1,7 @@
 package com.robertopineda.android_readictionary.views
 
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
@@ -19,6 +20,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor
+import java.io.FileOutputStream
 import java.io.InputStream
 
 @Composable
@@ -49,25 +54,32 @@ fun PDFView(
     // Check cache and translate text if necessary
     LaunchedEffect(extractedText) {
         if (extractedText.isNotEmpty()) {
+
+            // Clear the translatedWords list before starting a new translation
+            translatedWords.clear()
+            Log.d("ReadingView", "Cleared translatedWords list")
+
             val cacheManager = CacheManager.getInstance(context)
             val cacheKey = cacheManager.cacheKey(extractedText)
 
+            // Check if cached data exists
             val cachedWords = cacheManager.loadTranslatedWords(cacheKey)
             if (cachedWords != null) {
                 translatedWords.clear()
                 translatedWords.addAll(cachedWords)
+                Log.d("ReadingView", "Loaded cached words: ${translatedWords.size}")
             } else {
-                val translationService = TranslationService()
+                // No cached data, call the API
+                val translationService = TranslationService(cacheManager)
                 coroutineScope.launch {
                     translationService.translateText(
                         text = extractedText,
                         targetLanguage = targetLanguage.value,
+                        translatedWords = translatedWords,
                         onWordsReceived = { words ->
-                            translatedWords.clear()
                             translatedWords.addAll(words)
-                            cacheManager.saveTranslatedWords(words, cacheKey)
-                        },
-                        extractedText = extractedText
+                            Log.d("ReadingView", "Translated words: ${translatedWords.size}")
+                        }
                     )
                 }
             }
@@ -89,8 +101,8 @@ fun PDFView(
                         .enableSwipe(true)
                         .enableDoubletap(true)
                         .defaultPage(0)
-                        .fitEachPage(true) // Adjust rendering settings
-                        .autoSpacing(false) // Disable auto-spacing
+                        .fitEachPage(true)
+                        .autoSpacing(false)
                         .load()
                 } else {
                     Log.e("PDFView", "Failed to open input stream for URI: $documentUri")
@@ -103,7 +115,18 @@ fun PDFView(
 
 // Function to extract text from a PDF file
 private fun extractTextFromPdf(inputStream: InputStream): String {
-    // Implement text extraction logic here
-    // For now, return an empty string
-    return ""
+    return try {
+        val pdfDocument = PdfDocument(PdfReader(inputStream))
+        val textBuilder = StringBuilder()
+        for (i in 1..pdfDocument.numberOfPages) {
+            val page = pdfDocument.getPage(i)
+            val text = PdfTextExtractor.getTextFromPage(page)
+            textBuilder.append(text)
+        }
+        pdfDocument.close()
+        textBuilder.toString()
+    } catch (e: Exception) {
+        Log.e("PDFView", "Error extracting text from PDF: ${e.message}")
+        "" // Return an empty string in case of an error
+    }
 }

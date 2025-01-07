@@ -10,7 +10,10 @@ import androidx.compose.ui.unit.dp
 import com.robertopineda.android_readictionary.models.TranslatedWord
 
 @Composable
-fun TranslatedWordRow(word: TranslatedWord, isHighlighted: Boolean) {
+fun TranslatedWordRow(
+    word: TranslatedWord,
+    isHighlighted: Boolean
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()

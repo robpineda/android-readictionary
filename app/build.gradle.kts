@@ -74,6 +74,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("com.github.mhiew:android-pdf-viewer:3.2.0-beta.1")
+    implementation ("com.itextpdf:itext7-core:7.2.5")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
     testImplementation(libs.junit)
