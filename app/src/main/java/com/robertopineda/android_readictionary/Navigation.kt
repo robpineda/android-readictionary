@@ -11,11 +11,12 @@ import androidx.navigation.navArgument
 import com.robertopineda.android_readictionary.models.Language
 import com.robertopineda.android_readictionary.models.TextRecord
 import com.robertopineda.android_readictionary.models.TranslatedWord
-import com.robertopineda.android_readictionary.utilities.SharedPreferencesHelper
 import com.robertopineda.android_readictionary.views.ContentView
 import com.robertopineda.android_readictionary.views.DocumentListView
 import com.robertopineda.android_readictionary.views.ReadingView
 import com.robertopineda.android_readictionary.views.TextModeDetailView
+import com.robertopineda.android_readictionary.views.TextModeInputView
+import com.robertopineda.android_readictionary.views.TextModeListView
 
 @Composable
 fun AppNavigation() {
@@ -40,13 +41,27 @@ fun AppNavigation() {
             )
         }
 
-        // DocumentList Screen
-        composable(Screen.DocumentList.route) {
+        // DocumentListView Screen
+        composable(
+            route = Screen.DocumentListView.route,
+        ) { backStackEntry ->
             DocumentListView(
                 navController = navController,
                 translatedWords = translatedWords,
                 targetLanguage = targetLanguage,
                 documents = documents
+            )
+        }
+
+        // TextModeListView Screen
+        composable(
+            route = Screen.TextModeListView.route,
+        ) { backStackEntry ->
+            TextModeListView(
+                navController = navController,
+                translatedWords = translatedWords,
+                targetLanguage = targetLanguage,
+                textRecords = textRecords
             )
         }
 
@@ -63,8 +78,26 @@ fun AppNavigation() {
             )
         }
 
-        // TextModeDetailView Screen
-        composable("textModeDetailView/{recordId}") { backStackEntry ->
+        // TextModeInputView Screen
+        composable(Screen.TextModeInputView.route) {
+            TextModeInputView(
+                onSave = { name, text ->
+                    val newRecord = TextRecord(name = name, text = text, translatedWords = emptyList())
+                    textRecords.add(newRecord)
+                    newRecord
+                    //navController.navigate("textModeDetailView/${newRecord.id}")
+                },
+                navController = navController,
+                translatedWords = translatedWords,
+                targetLanguage = targetLanguage
+            )
+        }
+
+        // TextModeDetailView Screen (reusable for both TextModeListView and TextModeInputView)
+        composable(
+            route = "textModeDetailView/{recordId}",
+            arguments = listOf(navArgument("recordId") { type = NavType.StringType })
+        ) { backStackEntry ->
             val recordId = backStackEntry.arguments?.getString("recordId") ?: ""
             val record = textRecords.find { it.id.toString() == recordId } ?: return@composable
             TextModeDetailView(

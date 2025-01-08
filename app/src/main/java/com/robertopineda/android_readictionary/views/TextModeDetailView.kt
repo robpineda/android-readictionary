@@ -1,14 +1,29 @@
 package com.robertopineda.android_readictionary.views
 
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.robertopineda.android_readictionary.models.Language
 import com.robertopineda.android_readictionary.models.TextRecord
 import com.robertopineda.android_readictionary.models.TranslatedWord
+import com.robertopineda.android_readictionary.utilities.CacheManager
+import com.robertopineda.android_readictionary.utilities.TranslationService
+import kotlinx.coroutines.launch
 
 @Composable
 fun TextModeDetailView(
@@ -16,15 +31,81 @@ fun TextModeDetailView(
     translatedWords: SnapshotStateList<TranslatedWord>,
     targetLanguage: MutableState<Language>
 ) {
-    Column {
-        // Display the original text
-        Text(record.text)
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
-        // Display translated words
-        LazyColumn {
-            items(translatedWords) { word ->
-                TranslatedWordRow(word = word, isHighlighted = false)
+    // State for the sheet's height
+    var sheetHeight by remember { mutableStateOf(300.dp) }
+
+    // Access LocalDensity in a composable context
+    val density = LocalDensity.current
+
+    // Load cached data when the screen is first composed
+    LaunchedEffect(Unit) {
+        val cacheManager = CacheManager.getInstance(context)
+        val cacheKey = cacheManager.cacheKey(record.text)
+
+        // Check if cached data exists
+        val cachedWords = cacheManager.loadTranslatedWords(cacheKey)
+        if (cachedWords != null) {
+            translatedWords.clear()
+            translatedWords.addAll(cachedWords)
+            Log.d("TextModeDetailView", "Loaded cached words: ${translatedWords.size}")
+        } else {
+            // No cached data, call the API
+            val translationService = TranslationService(cacheManager)
+            coroutineScope.launch {
+                translationService.translateText(
+                    text = record.text,
+                    targetLanguage = targetLanguage.value,
+                    translatedWords = translatedWords,
+                    onWordsReceived = { words ->
+                        translatedWords.addAll(words)
+                        Log.d("TextModeDetailView", "Translated words: ${translatedWords.size}")
+                    }
+                )
             }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Text View (Top View)
+        SelectionContainer {
+            Text(
+                text = record.text,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 20.sp
+                )
+            )
+        }
+
+        // DictionaryView (Bottom Sheet)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(sheetHeight)
+                .align(Alignment.BottomCenter)
+                .background(Color.White)
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures { _, dragAmount ->
+                        // Convert sheetHeight to pixels for calculation
+                        val currentHeightPx = with(density) { sheetHeight.toPx() }
+                        val newHeightPx = currentHeightPx - dragAmount // Subtract dragAmount in pixels
+                        val newHeightDp = with(density) { newHeightPx.toDp() }
+
+                        // Update sheetHeight, ensuring it stays within bounds
+                        sheetHeight = newHeightDp.coerceIn(100.dp, 400.dp)
+                    }
+                }
+        ) {
+            DictionaryView(
+                translatedWords = translatedWords,
+                highlightedWord = null,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

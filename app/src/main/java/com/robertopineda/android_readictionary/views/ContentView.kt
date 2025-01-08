@@ -33,6 +33,7 @@ fun ContentView(
     val context = LocalContext.current
     val sharedPreferencesHelper = remember { SharedPreferencesHelper(context) }
 
+
     // Load documents from SharedPreferences when the app starts
     LaunchedEffect(Unit) {
         try {
@@ -74,21 +75,21 @@ fun TabLayout(
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                text = { Text("PDF") },
-                icon = { Icon(Icons.Default.Info, contentDescription = "PDF") }
+                text = { Text("Text") },
+                icon = { Icon(Icons.Default.Create, contentDescription = "Text") }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("Text") },
-                icon = { Icon(Icons.Default.Create, contentDescription = "Text") }
+                text = { Text("PDF") },
+                icon = { Icon(Icons.Default.Info, contentDescription = "PDF") }
             )
         }
 
         // Content for the selected tab
         when (selectedTab) {
-            0 -> DocumentListView(navController, translatedWords, targetLanguage, documents)
-            1 -> TextModeListView(navController, translatedWords, targetLanguage, textRecords)
+            0 -> TextModeListView(navController, translatedWords, targetLanguage, textRecords)
+            1 -> DocumentListView(navController, translatedWords, targetLanguage, documents)
         }
     }
 }

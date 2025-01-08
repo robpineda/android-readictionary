@@ -21,7 +21,8 @@ fun DictionaryView(
 ) {
     Column(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(Color(0xFF1E1E1E))
             .padding(16.dp)
     ) {
         Text(
