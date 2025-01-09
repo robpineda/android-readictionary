@@ -1,6 +1,8 @@
 package com.robertopineda.android_readictionary.utilities
 
 import android.content.Context
+import android.net.Uri
+import android.util.Log
 import com.robertopineda.android_readictionary.models.TranslatedWord
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.builtins.ListSerializer
@@ -35,6 +37,13 @@ class CacheManager private constructor(context: Context) {
         return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
+    // Generate a cache key using the Uri and a hash of the text
+    fun generateCacheKey(uri: Uri, text: String): String {
+        val uriHash = uri.hashCode().toString()
+        val textHash = cacheKey(text)
+        return "$uriHash-$textHash" // Combine Uri hash and text hash
+    }
+
     fun saveTranslatedWords(words: List<TranslatedWord>, cacheKey: String) {
         val cacheFile = File(cacheDir, "$cacheKey.json")
         val jsonString = Json.encodeToString(ListSerializer(TranslatedWord.serializer()), words)
@@ -47,6 +56,14 @@ class CacheManager private constructor(context: Context) {
             Json.decodeFromString(cacheFile.readText())
         } else {
             null
+        }
+    }
+
+    fun deleteCachedWords(cacheKey: String) {
+        val cacheFile = File(cacheDir, "$cacheKey.json")
+        if (cacheFile.exists()) {
+            cacheFile.delete()
+            Log.d("CacheManager", "Deleted cache for key: $cacheKey")
         }
     }
 }

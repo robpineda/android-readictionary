@@ -12,9 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -32,8 +30,12 @@ fun DocumentListView(
     targetLanguage: MutableState<Language>,
     documents: SnapshotStateList<Uri>
 ) {
-    var showDocumentPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val cacheManager = remember { CacheManager.getInstance(context) }
+    val cacheKeys = remember { mutableStateMapOf<Uri, String>() }
+
+    var showDocumentPicker by remember { mutableStateOf(false) }
+
     val sharedPreferencesHelper = remember { SharedPreferencesHelper(context) }
 
     // State for the dialog
@@ -104,10 +106,17 @@ fun DocumentListView(
                 Button(
                     onClick = {
                         // Delete the selected document
-                        documents.remove(selectedDocument)
-                        // Save the updated list to SharedPreferences
+                        val documentToDelete = selectedDocument!!
+                        documents.remove(documentToDelete)
+
+                        // Delete the cache associated with the document
+                        val cacheKey = cacheKeys[documentToDelete]
+                        if (cacheKey != null) {
+                            cacheManager.deleteCachedWords(cacheKey)
+                            cacheKeys.remove(documentToDelete)
+                        }
+
                         sharedPreferencesHelper.saveDocuments(documents)
-                        // Close the dialog
                         showDialog = false
                     }
                 ) {
@@ -116,7 +125,7 @@ fun DocumentListView(
             },
             dismissButton = {
                 Button(
-                    onClick = { showDialog = false } // Close the dialog
+                    onClick = { showDialog = false }
                 ) {
                     Text("Cancel")
                 }

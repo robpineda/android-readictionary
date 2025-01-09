@@ -31,6 +31,7 @@ fun PDFView(
     documentUri: Uri,
     translatedWords: SnapshotStateList<TranslatedWord>,
     targetLanguage: MutableState<Language>,
+    cacheKeys: MutableMap<Uri, String>,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -57,10 +58,12 @@ fun PDFView(
 
             // Clear the translatedWords list before starting a new translation
             translatedWords.clear()
-            Log.d("ReadingView", "Cleared translatedWords list")
 
             val cacheManager = CacheManager.getInstance(context)
-            val cacheKey = cacheManager.cacheKey(extractedText)
+            val cacheKey = cacheManager.generateCacheKey(documentUri, extractedText)
+
+            // Store the cache key in the map
+            cacheKeys[documentUri] = cacheKey
 
             // Check if cached data exists
             val cachedWords = cacheManager.loadTranslatedWords(cacheKey)
@@ -79,6 +82,11 @@ fun PDFView(
                         onWordsReceived = { words ->
                             translatedWords.addAll(words)
                             Log.d("ReadingView", "Translated words: ${translatedWords.size}")
+                        },
+                        onStreamComplete = {
+                            // Save the translated words to cache after the stream is complete
+                            cacheManager.saveTranslatedWords(translatedWords, cacheKey)
+                            Log.d("PDFView", "Saved words to cache: ${translatedWords.size}")
                         }
                     )
                 }

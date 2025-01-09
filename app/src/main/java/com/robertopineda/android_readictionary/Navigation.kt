@@ -85,7 +85,6 @@ fun AppNavigation() {
                     val newRecord = TextRecord(name = name, text = text, translatedWords = emptyList())
                     textRecords.add(newRecord)
                     newRecord
-                    //navController.navigate("textModeDetailView/${newRecord.id}")
                 },
                 navController = navController,
                 translatedWords = translatedWords,

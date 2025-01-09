@@ -22,7 +22,8 @@ class TranslationService(private val cacheManager: CacheManager) {
         text: String,
         targetLanguage: Language,
         translatedWords: SnapshotStateList<TranslatedWord>,
-        onWordsReceived: (List<TranslatedWord>) -> Unit
+        onWordsReceived: (List<TranslatedWord>) -> Unit,
+        onStreamComplete: () -> Unit
     ) = withContext(Dispatchers.IO) {
 
         val requestBody = JSONObject().apply {
@@ -69,6 +70,7 @@ class TranslationService(private val cacheManager: CacheManager) {
                                 // Check if the response is a control message (e.g., ["DONE"])
                                 if (jsonString == "[DONE]") {
                                     Log.d("TranslationService", "Stream completed")
+                                    onStreamComplete() // Notify that the stream is complete
                                     continue
                                 }
 

@@ -28,6 +28,7 @@ fun ReadingView(
     var dictionaryViewHeight by remember { mutableStateOf(configuration.screenHeightDp / 2) }
     var isDragging by remember { mutableStateOf(false) }
     var highlightedWord by remember { mutableStateOf<String?>(null) }
+    val cacheKeys = remember { mutableStateMapOf<Uri, String>() }
 
     val screenHeight = configuration.screenHeightDp.dp
 
@@ -46,7 +47,8 @@ fun ReadingView(
             documentUri = decodedUri,
             translatedWords = translatedWords,
             targetLanguage = targetLanguage,
-            modifier = Modifier.fillMaxSize()
+            cacheKeys = cacheKeys,
+            modifier = Modifier.fillMaxSize(),
         )
 
         // DictionaryView (Bottom Sheet)

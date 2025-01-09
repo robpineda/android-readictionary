@@ -42,13 +42,16 @@ fun TextModeDetailView(
 
     // Load cached data when the screen is first composed
     LaunchedEffect(Unit) {
+
+        // Clear the translatedWords list before starting a new translation
+        translatedWords.clear()
+
         val cacheManager = CacheManager.getInstance(context)
         val cacheKey = cacheManager.cacheKey(record.text)
 
         // Check if cached data exists
         val cachedWords = cacheManager.loadTranslatedWords(cacheKey)
         if (cachedWords != null) {
-            translatedWords.clear()
             translatedWords.addAll(cachedWords)
             Log.d("TextModeDetailView", "Loaded cached words: ${translatedWords.size}")
         } else {
@@ -62,9 +65,20 @@ fun TextModeDetailView(
                     onWordsReceived = { words ->
                         translatedWords.addAll(words)
                         Log.d("TextModeDetailView", "Translated words: ${translatedWords.size}")
+                    },
+                    onStreamComplete = {
+                        // Save the translated words to cache after the stream is complete
+                        cacheManager.saveTranslatedWords(translatedWords, cacheKey)
+                        Log.d("PDFView", "Saved words to cache: ${translatedWords.size}")
                     }
                 )
+
+                // Save the translated words to cache after translating
+                cacheManager.saveTranslatedWords(translatedWords, cacheKey)
+                Log.d("TextModeDetailView", "Saved words to cache: ${translatedWords.size}")
             }
+
+
         }
     }
 
