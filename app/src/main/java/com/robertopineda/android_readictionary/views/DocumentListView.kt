@@ -71,11 +71,9 @@ fun DocumentListView(
                             .pointerInput(Unit) {
                                 detectTapGestures(
                                     onTap = {
-                                        Log.d("DocumentListView", "Tapped on document: $document")
                                         try {
                                             val encodedUri = Uri.encode(document.toString())
                                             navController.navigate(Screen.ReadingView.createRoute(encodedUri))
-                                            Log.d("DocumentListView", "Navigation triggered")
                                         } catch (e: SecurityException) {
                                             Log.e("DocumentListView", "Permission denied for URI: $document", e)
                                         } catch (e: Exception) {

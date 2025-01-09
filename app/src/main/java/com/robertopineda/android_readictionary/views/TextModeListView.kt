@@ -41,6 +41,16 @@ fun TextModeListView(
     var showDialog by remember { mutableStateOf(false) }
     var selectedRecord by remember { mutableStateOf<TextRecord?>(null) }
 
+    // Load cached records when the screen is first composed
+    LaunchedEffect(Unit) {
+        val cachedRecords = cacheManager.loadCachedTextRecords()
+        if (cachedRecords != null) {
+            textRecords.clear()
+            textRecords.addAll(cachedRecords)
+            Log.d("TextModeListView", "Loaded cached records: ${textRecords.size}")
+        }
+    }
+
     // Ensure the content fills the available space
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -98,9 +108,15 @@ fun TextModeListView(
                         val recordToDelete = selectedRecord!!
                         textRecords.remove(recordToDelete)
 
+                        // Delete the cached translations associated with the record
+                        val cacheKeyTranslations = cacheManager.getCacheKeyForTranslations(recordToDelete.text)
+                        cacheManager.deleteCachedWords(cacheKeyTranslations)
+
                         // Delete the cache associated with the record
-                        val cacheKey = cacheManager.cacheKey(recordToDelete.text)
-                        cacheManager.deleteCachedWords(cacheKey)
+                        val cacheKeyTextRecord = cacheManager.getCacheKeyForTextRecord(
+                            recordToDelete.name,
+                            recordToDelete.text)
+                        cacheManager.deleteCachedTextRecord(cacheKeyTextRecord)
 
                         showDialog = false
                     }

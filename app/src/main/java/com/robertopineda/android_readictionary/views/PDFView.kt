@@ -60,14 +60,14 @@ fun PDFView(
             translatedWords.clear()
 
             val cacheManager = CacheManager.getInstance(context)
-            val cacheKey = cacheManager.generateCacheKey(documentUri, extractedText)
+            val cacheKey = cacheManager.getCacheKeyForDocument(documentUri, extractedText)
 
             // Store the cache key in the map
             cacheKeys[documentUri] = cacheKey
 
             // Check if cached data exists
             val cachedWords = cacheManager.loadTranslatedWords(cacheKey)
-            if (cachedWords != null) {
+            if (cachedWords != null && cachedWords.isNotEmpty()) {
                 translatedWords.clear()
                 translatedWords.addAll(cachedWords)
                 Log.d("ReadingView", "Loaded cached words: ${translatedWords.size}")

@@ -88,7 +88,8 @@ fun AppNavigation() {
                 },
                 navController = navController,
                 translatedWords = translatedWords,
-                targetLanguage = targetLanguage
+                targetLanguage = targetLanguage,
+                textRecords = textRecords
             )
         }
 

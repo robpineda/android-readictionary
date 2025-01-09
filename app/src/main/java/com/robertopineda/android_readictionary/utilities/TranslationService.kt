@@ -70,7 +70,6 @@ class TranslationService(private val cacheManager: CacheManager) {
                                 // Check if the response is a control message (e.g., ["DONE"])
                                 if (jsonString == "[DONE]") {
                                     Log.d("TranslationService", "Stream completed")
-                                    onStreamComplete() // Notify that the stream is complete
                                     continue
                                 }
 
@@ -97,13 +96,9 @@ class TranslationService(private val cacheManager: CacheManager) {
                         if (accumulatedContent.isNotEmpty()) {
                             val newWords = parseTranslatedContent(accumulatedContent)
                             onWordsReceived(newWords)
+                            onStreamComplete()
                             accumulatedContent = ""
                         }
-
-                        // Save the translated words to cache
-                        val cacheKey = cacheManager.cacheKey(text)
-                        cacheManager.saveTranslatedWords(translatedWords, cacheKey)
-                        Log.d("TranslationService", "Saved words to cache: ${translatedWords.size}")
                     }
                 }
                 else{
@@ -154,7 +149,22 @@ class TranslationService(private val cacheManager: CacheManager) {
     }
 
     private fun parseWordEntry(wordInfo: String, definitions: String): TranslatedWord? {
-        val wordInfoComponents = wordInfo.split(", ")
+
+        val normalizedWordInfo = wordInfo
+            .replace("、", ",") // Japanese comma
+            .replace("،", ",") // Arabic comma
+            .replace("，", ",") // Chinese comma
+            .replace("՝", ",") // Armenian comma
+            .replace("᠂", ",") // Mongolian comma
+            .replace("፣", ",") // Ethiopic comma
+            .replace("ฯ", ",") // Thai comma
+            .replace("་", ",") // Tibetan comma
+            .replace("។", ",") // Khmer comma
+        val wordInfoComponents = normalizedWordInfo.split(Regex(",\\s*"))
+
+        // Split by any type of comma and optional whitespace
+//        val wordInfoComponents = wordInfo.split(Regex("""[,\u3001\u060C\uFF0C\u055D\u1802\u1363\u0E2F\u0F0B\u17D4]"""))
+//            .map { it.trim() } // Trim whitespace from each component
         if (wordInfoComponents.size < 3) return null
 
         val originalText = wordInfoComponents[0]

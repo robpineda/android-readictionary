@@ -32,7 +32,7 @@ fun DictionaryView(
         )
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(translatedWords) { word ->
+            items(translatedWords, key = { it.id }) { word ->
                 TranslatedWordRow(
                     word = word,
                     isHighlighted = word.originalText == highlightedWord

@@ -26,7 +26,11 @@ fun TextModeInputView(
     navController: NavController,
     translatedWords: SnapshotStateList<TranslatedWord>,
     targetLanguage: MutableState<Language>,
+    textRecords: SnapshotStateList<TextRecord>
 ) {
+    val context = LocalContext.current
+    val cacheManager = remember { CacheManager.getInstance(context) }
+
     var name by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
 
@@ -66,9 +70,19 @@ fun TextModeInputView(
             Button(
                 onClick = {
                     if (name.isEmpty()) {
-                        name = text.take(30)
+                        name = text.take(15)
                     }
                     val newRecord = onSave(name, text)
+
+                    // Save the new record (name and text) to the cache
+                    val cacheKey = cacheManager.getCacheKeyForTextRecord(newRecord.name,
+                        newRecord.text)
+                    cacheManager.saveTextRecord(newRecord, cacheKey)
+
+                    // Add the new record to the textRecords list
+                    textRecords.add(newRecord)
+
+                    // Navigate to TextModeDetailView
                     navController.navigate(Screen.TextModeDetailView.createRoute(newRecord.id.toString())) {
                         popUpTo(Screen.TextModeInputView.route) { inclusive = true }
                     }

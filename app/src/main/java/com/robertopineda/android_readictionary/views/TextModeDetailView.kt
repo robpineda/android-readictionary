@@ -47,11 +47,11 @@ fun TextModeDetailView(
         translatedWords.clear()
 
         val cacheManager = CacheManager.getInstance(context)
-        val cacheKey = cacheManager.cacheKey(record.text)
+        val cacheKey = cacheManager.getCacheKeyForTranslations(record.text)
 
         // Check if cached data exists
         val cachedWords = cacheManager.loadTranslatedWords(cacheKey)
-        if (cachedWords != null) {
+        if (cachedWords != null && cachedWords.isNotEmpty()) {
             translatedWords.addAll(cachedWords)
             Log.d("TextModeDetailView", "Loaded cached words: ${translatedWords.size}")
         } else {
@@ -72,10 +72,6 @@ fun TextModeDetailView(
                         Log.d("PDFView", "Saved words to cache: ${translatedWords.size}")
                     }
                 )
-
-                // Save the translated words to cache after translating
-                cacheManager.saveTranslatedWords(translatedWords, cacheKey)
-                Log.d("TextModeDetailView", "Saved words to cache: ${translatedWords.size}")
             }
 
 
