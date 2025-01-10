@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +18,7 @@ import com.robertopineda.android_readictionary.models.TranslatedWord
 fun DictionaryView(
     translatedWords: List<TranslatedWord>,
     highlightedWord: String?,
+    listState: LazyListState,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -25,7 +27,10 @@ fun DictionaryView(
             .background(Color(0xFF1E1E1E))
             .padding(16.dp)
     ) {
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             items(translatedWords, key = { it.id }) { word ->
                 TranslatedWordRow(
                     word = word,

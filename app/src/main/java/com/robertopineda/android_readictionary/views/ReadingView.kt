@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -35,6 +36,9 @@ fun ReadingView(
 
     // Access LocalDensity in a composable context
     val density = LocalDensity.current
+
+    // LazyListState for DictionaryView scrolling
+    val dictionaryListState = rememberLazyListState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         // PDFView (Top View)
@@ -68,6 +72,7 @@ fun ReadingView(
             DictionaryView(
                 translatedWords = translatedWords,
                 highlightedWord = null,
+                listState = dictionaryListState,
                 modifier = Modifier.fillMaxSize()
             )
         }

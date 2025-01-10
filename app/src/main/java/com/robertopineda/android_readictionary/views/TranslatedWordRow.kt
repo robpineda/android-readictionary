@@ -17,25 +17,31 @@ fun TranslatedWordRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(if (isHighlighted) Color.Yellow else Color.Transparent)
             .padding(vertical = 4.dp)
     ) {
         if (word.transliteration?.isNotEmpty() == true) {
             Text(
                 text = "${word.originalText}, ${word.transliteration}, ${word.romaji ?: ""}",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = if (isHighlighted) Color(0xFFFFA500) else Color.Unspecified
+                )
             )
         } else {
             Text(
                 text = "${word.originalText}, ${word.romaji ?: ""}",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = if (isHighlighted) Color(0xFFFFA500) else Color.Unspecified
+                )
             )
         }
 
+        //Definitions
         if (word.definitions.isNotEmpty()) {
             Text(
                 text = word.definitions.joinToString(", "),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = if (isHighlighted) Color(0xFFFFA500) else Color.Unspecified
+                ),
                 color = Color.Gray
             )
         }
