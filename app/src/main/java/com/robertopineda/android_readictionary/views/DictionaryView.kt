@@ -25,12 +25,6 @@ fun DictionaryView(
             .background(Color(0xFF1E1E1E))
             .padding(16.dp)
     ) {
-        Text(
-            text = "Dictionary",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(translatedWords, key = { it.id }) { word ->
                 TranslatedWordRow(

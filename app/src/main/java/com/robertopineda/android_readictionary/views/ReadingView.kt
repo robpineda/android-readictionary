@@ -25,18 +25,13 @@ fun ReadingView(
     targetLanguage: MutableState<Language>
 ) {
     val configuration = LocalConfiguration.current
-    var dictionaryViewHeight by remember { mutableStateOf(configuration.screenHeightDp / 2) }
+    var dictionaryViewHeight by remember { mutableStateOf(configuration.screenHeightDp.dp / 2) }
     var isDragging by remember { mutableStateOf(false) }
     var highlightedWord by remember { mutableStateOf<String?>(null) }
     val cacheKeys = remember { mutableStateMapOf<Uri, String>() }
 
-    val screenHeight = configuration.screenHeightDp.dp
-
     // Decode the document URI
     val decodedUri = Uri.parse(Uri.decode(documentUri.toString()))
-
-    // State for the sheet's height
-    var sheetHeight by remember { mutableStateOf(300.dp) }
 
     // Access LocalDensity in a composable context
     val density = LocalDensity.current
@@ -55,18 +50,18 @@ fun ReadingView(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(sheetHeight)
+                .height(dictionaryViewHeight)
                 .align(Alignment.BottomCenter)
                 .background(Color.White)
                 .pointerInput(Unit) {
                     detectVerticalDragGestures { _, dragAmount ->
                         // Convert sheetHeight to pixels for calculation
-                        val currentHeightPx = with(density) { sheetHeight.toPx() }
+                        val currentHeightPx = with(density) { dictionaryViewHeight.toPx() }
                         val newHeightPx = currentHeightPx - dragAmount // Subtract dragAmount in pixels
                         val newHeightDp = with(density) { newHeightPx.toDp() }
 
                         // Update sheetHeight, ensuring it stays within bounds
-                        sheetHeight = newHeightDp.coerceIn(100.dp, 400.dp)
+                        dictionaryViewHeight = newHeightDp.coerceIn(100.dp, 400.dp)
                     }
                 }
         ) {
