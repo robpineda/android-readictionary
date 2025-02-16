@@ -33,6 +33,7 @@ import com.robertopineda.android_readictionary.models.TextRecord
 import com.robertopineda.android_readictionary.models.TranslatedWord
 import com.robertopineda.android_readictionary.utilities.CacheManager
 import com.robertopineda.android_readictionary.utilities.TranslationService
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -54,6 +55,15 @@ fun TextModeDetailView(
 
     // State for highlighted word
     var highlightedWordIndex by remember { mutableStateOf(0) }
+
+    // State to track whether a word was tapped
+    var isWordTapped by remember { mutableStateOf(false) }
+
+    // Function to handle word taps in the DictionaryView
+    fun onDictionaryWordTapped(index: Int) {
+        highlightedWordIndex = index
+        isWordTapped = true
+    }
 
     // LazyListState for DictionaryView scrolling
     val dictionaryListState = rememberLazyListState()
@@ -79,7 +89,11 @@ fun TextModeDetailView(
     // Function to scroll the DictionaryView to the corresponding word
     fun scrollDictionaryViewToWord(index: Int) {
         coroutineScope.launch {
+            // Scroll to the target word
             dictionaryListState.scrollToItem(index)
+
+            // Ensure the target word is fully visible in the viewport
+            dictionaryListState.animateScrollToItem(index)
         }
     }
 
@@ -111,6 +125,28 @@ fun TextModeDetailView(
         return null
     }
 
+    // Observe the visible item in the DictionaryView
+    LaunchedEffect(dictionaryListState) {
+        snapshotFlow { dictionaryListState.layoutInfo }
+            .collect { layoutInfo ->
+                if (layoutInfo.visibleItemsInfo.isNotEmpty() && !isWordTapped) {
+                    // Get the first visible item index
+                    val firstVisibleItemIndex = dictionaryListState.firstVisibleItemIndex
+
+                    // Only update the highlighted word if no word was tapped recently
+                    highlightedWordIndex = firstVisibleItemIndex
+                }
+            }
+    }
+
+    // Reset the tap flag after a short delay
+//    LaunchedEffect(isWordTapped) {
+//        if (isWordTapped) {
+//            delay(100) // Adjust the delay as needed
+//            isWordTapped = false
+//        }
+//    }
+
     // Load cached data when the screen is first composed
     LaunchedEffect(Unit) {
         translatedWords.clear()
@@ -141,8 +177,6 @@ fun TextModeDetailView(
                     }
                 )
             }
-
-
         }
     }
 
@@ -161,6 +195,8 @@ fun TextModeDetailView(
                             if (tappedWord != null) {
                                 val index = translatedWords.indexOf(tappedWord)
                                 if (index != -1) {
+                                    // Set the tap flag and update the highlighted word
+                                    isWordTapped = true
                                     highlightedWordIndex = index
                                     scrollDictionaryViewToWord(index)
                                 }
@@ -190,6 +226,9 @@ fun TextModeDetailView(
 
                         // Update sheetHeight, ensuring it stays within bounds
                         dictionaryViewHeight = newHeightDp.coerceIn(100.dp, screenHeight * 3 / 4)
+
+                        // Reset the tap flag when the user scrolls the DictionaryView
+                        isWordTapped = false
                     }
                 }
         ) {
@@ -197,7 +236,11 @@ fun TextModeDetailView(
                 translatedWords = translatedWords,
                 highlightedWord = translatedWords.getOrNull(highlightedWordIndex)?.originalText,
                 listState = dictionaryListState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                onWordTapped = { index ->
+                    // Handle word taps in the DictionaryView
+                    onDictionaryWordTapped(index)
+                }
             )
         }
     }

@@ -19,7 +19,8 @@ fun DictionaryView(
     translatedWords: List<TranslatedWord>,
     highlightedWord: String?,
     listState: LazyListState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onWordTapped: (Int) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -34,7 +35,14 @@ fun DictionaryView(
             items(translatedWords, key = { it.id }) { word ->
                 TranslatedWordRow(
                     word = word,
-                    isHighlighted = word.originalText == highlightedWord
+                    isHighlighted = word.originalText == highlightedWord,
+                    onWordTapped = {
+                        // Notify the parent about the tapped word index
+                        val index = translatedWords.indexOf(word)
+                        if (index != -1) {
+                            onWordTapped(index)
+                        }
+                    }
                 )
             }
         }

@@ -71,9 +71,13 @@ fun ReadingView(
         ) {
             DictionaryView(
                 translatedWords = translatedWords,
-                highlightedWord = null,
+                highlightedWord = highlightedWord,
                 listState = dictionaryListState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                onWordTapped = { index ->
+                    // Handle word taps in the DictionaryView
+                    highlightedWord = translatedWords.getOrNull(index)?.originalText
+                }
             )
         }
     }
